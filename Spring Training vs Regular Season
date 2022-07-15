@@ -1,0 +1,11 @@
+library(readr)
+library(dplyr)
+library(ggplot2)
+
+SpringTraining <- read_csv("~/Baseball/Datasets/SpringTraining.csv")
+
+p <- ggplot(SpringTraining, aes(x,y)) + geom_point() + xlim(0.2,0.8) + ylim(0.2,0.8) +
+  geom_smooth(method="lm",se=FALSE) + xlab("Regular Season Winning %") + ylab("Spring Training Winning %") +
+  geom_text(aes(label=ifelse(x<0.4 & y<0.4 | x>0.6 & y>0.6,Team,"")), hjust=-0.3,vjust=0.5)
+
+p + labs(title="Regular Season (x) vs. Spring Training (y) Winning Percentages")
