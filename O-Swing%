@@ -1,0 +1,60 @@
+library(readr)
+library(tidyverse)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(reshape2)
+
+#read and tame data
+april <- read.csv("april_plate_discipline.csv", fileEncoding = 'UTF-8-BOM')
+may <- read.csv("may_plate_discipline.csv", fileEncoding = 'UTF-8-BOM')
+june <- read.csv("june_plate_discipline.csv", fileEncoding = 'UTF-8-BOM')
+july <- read.csv("july_plate_discipline.csv", fileEncoding = 'UTF-8-BOM')
+august <- read.csv("august_plate_discipline.csv", fileEncoding = 'UTF-8-BOM')
+
+april <- april %>%
+  select("Name", "O.Swing.") %>%
+  rename("april" = "O.Swing.") 
+  
+may <- may %>%
+  select("Name", "O.Swing.") %>%
+  rename("may" = "O.Swing.")
+
+june <- june %>%
+  select("Name", "O.Swing.") %>%
+  rename("june" = "O.Swing.")
+
+july <- july %>%
+  select("Name", "O.Swing.") %>% 
+  rename("july" = "O.Swing.")  
+
+august <- august %>%
+  select("Name", "O.Swing.") %>% 
+  rename("august" = "O.Swing.")  
+
+#tidy data
+season <- april %>%
+  full_join(may, by = "Name") %>%
+  full_join(june, by = "Name") %>%
+  full_join(july, by = "Name") %>%
+  full_join(august, by = "Name")
+
+tidy <- season %>%
+  gather(key = month, value = oswing, -Name, factor_key=TRUE) %>%
+  mutate(oswing = parse_number(oswing))
+  #separate(month, into="month", extra="drop") 
+
+tidy_complete <- tidy[complete.cases(tidy),] %>%
+  filter(Name != "Miguel Andujar" & Name != "Marwin Gonzalez" & Name != "Kyle Higashioka")
+
+#plot data
+ggplot(tidy_complete, aes(x=month, y=oswing, color=Name)) +
+  geom_point() + 
+  geom_line(aes(group=Name)) +
+  scale_y_continuous(labels = scales::percent_format(scale=1, accuracy=1), breaks=seq(15,45,by=5)) +
+  ggtitle("O-Swing% by Month (NYY)")
+
+
+august_leaders <- tidy_complete %>%
+  filter(month=='august') %>%
+  arrange(desc(oswing))
